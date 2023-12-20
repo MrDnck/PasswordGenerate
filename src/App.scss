@@ -129,10 +129,10 @@
                 input[type="checkbox"] {
                     cursor: pointer;
                     appearance: none;
-                    width: 1.5rem;
+                    width: 3rem;
                     height: 1.5rem;
                     border: 0.2rem solid $border;
-                    border-radius: 100%;
+                    border-radius: 0.5rem;
                     &:checked {
                         background: $blue;
                         border-color: $blue;

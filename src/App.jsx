@@ -1,23 +1,7 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import "./App.scss"
 import { SvgMinus, SvgPaste, SvgPlus } from "./Icons"
-
-let allLetters = "abcdefghijklmnopqrstuvwxyz",
-    allNumbers = "0123456789",
-    allSymbols = "~!@#$%^&*()_+-,.,"
-
-let random = (length, lowercase, uppercase, numbers, symbols) => {
-    let ch = []
-    lowercase && ch.push(allLetters)
-    uppercase && ch.push(allLetters.toUpperCase())
-    numbers && ch.push(allNumbers)
-    symbols && ch.push(allSymbols)
-    if (ch.length === 0) return "1234"
-    return Array(length).fill("").map(() => {
-        let currentCh = ch[Math.floor(ch.length * Math.random())]
-        return currentCh[Math.floor(currentCh.length * Math.random())]
-    }).join("")
-}
+import useRandom from "./useRandom"
 
 export default function App() {
     let [password, setPassword] = useState(""),
@@ -26,10 +10,11 @@ export default function App() {
         [lowercase, setLowercase] = useState(true),
         [uppercase, setUppercase] = useState(true),
         [numbers, setNumbers] = useState(true),
-        [symbols, setSymbols] = useState(true)
+        [symbols, setSymbols] = useState(true),
+        inputPassword = useRef()
 
-    const generatePassword = () => {
-        setPassword(random(length, lowercase, uppercase, numbers, symbols))
+    const generatePassword = config => {
+        setPassword(useRandom(config || { length, lowercase, uppercase, numbers, symbols }))
         copied && setCopied(false)
     }
 
@@ -50,8 +35,31 @@ export default function App() {
 
     const handleCopy = () => !copied && navigator.clipboard.writeText(password).then(() => setCopied(true))
 
+    const selectPassword = () => {
+        inputPassword.current.select()
+        handleCopy()
+    }
+
+    const getConfig = () => {
+        let config = localStorage.getItem("pass-gen-config")
+        return config ? JSON.parse(config) : false
+    }
+
+    const saveConfig = () => localStorage.setItem("pass-gen-config", JSON.stringify({ length, lowercase, uppercase, numbers, symbols }))
+
     useEffect(() => {
-        generatePassword()
+        let savedConfig = false
+        if (password.length === 0) {
+            savedConfig = getConfig()
+            setLength(savedConfig.length)
+            setLowercase(savedConfig.lowercase)
+            setUppercase(savedConfig.uppercase)
+            setNumbers(savedConfig.numbers)
+            setSymbols(savedConfig.symbols)
+        } else {
+            saveConfig()
+        }
+        generatePassword(savedConfig)
     }, [length, lowercase, uppercase, numbers, symbols])
 
     let configCheckboxes = [
@@ -66,7 +74,14 @@ export default function App() {
             <div className="app-container">
                 <h1>Password Generator</h1>
                 <div className="password-container">
-                    <input type="text" className="password" value={password} readOnly />
+                    <input
+                        type="text"
+                        className="password"
+                        value={password}
+                        ref={inputPassword}
+                        onClick={selectPassword}
+                        readOnly
+                    />
                     <button className={copied ? "copied" : ""} onClick={handleCopy}><SvgPaste /></button>
                 </div>
                 <form action="#" className="config-container" onSubmit={handleSubmit}>
