@@ -51,11 +51,13 @@ export default function App() {
         let savedConfig = false
         if (password.length === 0) {
             savedConfig = getConfig()
-            setLength(savedConfig.length)
-            setLowercase(savedConfig.lowercase)
-            setUppercase(savedConfig.uppercase)
-            setNumbers(savedConfig.numbers)
-            setSymbols(savedConfig.symbols)
+            if (savedConfig) {
+                setLength(savedConfig.length)
+                setLowercase(savedConfig.lowercase)
+                setUppercase(savedConfig.uppercase)
+                setNumbers(savedConfig.numbers)
+                setSymbols(savedConfig.symbols)
+            }
         } else {
             saveConfig()
         }
